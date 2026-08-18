@@ -5,7 +5,31 @@ description = "A test automation framework for Spree Commerce"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "black>=26.5.1",
     "pytest>=9.1.1",
     "pytest-playwright>=0.9.0",
     "requests>=2.34.2",
+    "ruff>=0.16.3",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E", # Pycodestyle errors
+    "F", # Pyflakes
+    "I", # Import sorting
+    "B", # Bugbear checks
+    "UP", # Python syntax upgrades
+    "RUF", # Ruff-specific rules
+    "PT", # Pytest style checks
+]
+
+ignore = [
+    "E501", # Line length is handled by Black
 ]
