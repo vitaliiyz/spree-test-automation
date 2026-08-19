@@ -6,7 +6,8 @@ The goal is to build a maintainable end-to-end test automation framework for Spr
 
 Main stack:
 
-* Python
+* Python 3.13
+* uv (package management)
 * Pytest
 * Playwright
 * Requests
@@ -109,8 +110,6 @@ Before considering work complete, run the relevant available checks.
 At minimum:
 
 ```bash
-pytest
-ruff check .
-```
-
-Add additional commands here when they are introduced into the project.
+uv run pytest
+uv run ruff check .
+uv run ruff format --check .
