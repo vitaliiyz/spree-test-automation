@@ -18,12 +18,25 @@ Minimum dependency versions are specified in `pyproject.toml`; exact resolved ve
 
 ## Planned test coverage
 
-- [ ] Customer registration and authentication.
-- [ ] Product catalog, search, and filtering.
-- [ ] Cart management.
-- [ ] Checkout and order creation.
-- [ ] API tests for customers, products, carts, and orders.
-- [ ] Negative scenarios and validation errors.
+- [ ] **Customer registration and authentication**
+  - [x] Login with valid credentials
+  - [ ] Registration, logout, and password reset
+
+- [ ] **Product catalog, search, and filtering**
+  - [x] Search for existing and non-existent products
+  - [ ] Navigation, PDP variants, and catalog filters
+
+- [ ] **Cart management**
+  - [ ] Add items, update quantities, and subtotal checks
+
+- [ ] **Checkout and order creation**
+  - [ ] Guest/User checkout, shipping, payment, and order confirmation
+
+- [ ] **API tests for customers, products, carts, and orders**
+  - [ ] Auth tokens, endpoint schemas, and cart/order mutations
+
+- [ ] **Negative scenarios and validation errors**
+  - [ ] Invalid credentials, form validation, and checkout errors
 
 ## Project structure
 

@@ -11,9 +11,11 @@ class SearchPage:
     @property
     def search_input(self) -> Locator:
         # Tries accessible placeholders first, falling back to id/name selectors
-        return self.page.get_by_placeholder("Search", exact=False).or_(
-            self.page.locator('input[name="keywords"], #keywords, input[type="search"]')
-        ).first
+        return (
+            self.page.get_by_placeholder("Search", exact=False)
+            .or_(self.page.locator('input[name="keywords"], #keywords, input[type="search"]'))
+            .first
+        )
 
     @property
     def product_cards(self) -> Locator:
