@@ -29,20 +29,28 @@ Minimum dependency versions are specified in `pyproject.toml`; exact resolved ve
 
 ```
 .
+├── .env.example
 ├── .gitignore
 ├── .python-version
 ├── AGENTS.md
 ├── README.md
+├── config.py
+├── pages
+│   ├── account_page.py
+│   ├── base_page.py
+│   └── login_page.py
 ├── pyproject.toml
 ├── tests
-│   └── test_login.py
+│   └── ui
+│       ├── conftest.py
+│       └── test_login.py
 └── uv.lock
 ```
 
 ## Prerequisites
 
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) installed.
-- Spree Commerce storefront running and available at `http://localhost:3001`.
+- Spree Commerce storefront running and available at the URL configured in `BASE_URL` (for example, `http://localhost:3001`).
 
 ## Setup and execution
 
@@ -58,6 +66,22 @@ Install the dependencies:
 ```bash
 uv sync
 ```
+
+Create a local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and provide the storefront URL and valid customer credentials:
+
+```dotenv
+LOGIN_EMAIL=your_login_email
+PASSWORD=your_login_password
+BASE_URL=http://localhost:3001
+```
+
+The `.env` file contains local credentials and must not be committed.
 
 Install the Chromium browser used by the UI tests:
 
