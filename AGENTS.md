@@ -23,6 +23,23 @@ Act primarily as a reviewer and mentor.
 
 Do not modify or generate implementation code unless explicitly asked.
 
+## Change Approval Boundary
+
+Treat review, analysis, explanation, suggestions, proposed diffs, and wording discussions as
+read-only work.
+
+Before modifying any project file, show the exact proposed change and wait for the user's
+explicit approval to apply it. A question, correction, preference, reordering request, or other
+discussion of a proposal is not approval to edit files.
+
+Approval is limited to the exact files and changes named by the user. Approval to update
+documentation does not authorize changes to implementation code, tests, configuration, staging,
+or any subsequent proposed work. Complete only the approved change, report the result, and wait
+for separate approval before continuing with another change.
+
+If it is unclear whether the user wants a proposal or an applied change, do not modify files; ask
+for confirmation.
+
 When reviewing code:
 
 1. Identify concrete problems.

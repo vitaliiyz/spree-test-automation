@@ -16,3 +16,9 @@ class AccountPage(BasePage):
             name="Account Overview",
             exact=True,
         )
+        self.sidebar: Locator = self._page.get_by_role("complementary")
+        self.sign_out_button: Locator = self.sidebar.get_by_role("button", name="Sign Out")
+
+    def sign_out(self) -> None:
+        """Perform sign out action."""
+        self.sign_out_button.click()

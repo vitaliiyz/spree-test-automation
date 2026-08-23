@@ -2,7 +2,7 @@
 
 Test automation framework for Spree Commerce.
 
-The project currently covers UI testing using Python, Pytest, and Playwright.
+The project currently covers UI authentication testing using Python, Pytest, and Playwright.
 API testing with Requests is planned.
 
 ## Tech Stack
@@ -18,12 +18,13 @@ Minimum dependency versions are specified in `pyproject.toml`; exact resolved ve
 
 ## Planned test coverage
 
-- [ ] Customer registration and authentication.
+- [x] Customer authentication: successful login, invalid password, unknown email, and logout.
+- [ ] Customer registration.
 - [ ] Product catalog, search, and filtering.
 - [ ] Cart management.
 - [ ] Checkout and order creation.
 - [ ] API tests for customers, products, carts, and orders.
-- [ ] Negative scenarios and validation errors.
+- [ ] Additional negative scenarios and validation errors.
 
 ## Project structure
 
@@ -43,7 +44,7 @@ Minimum dependency versions are specified in `pyproject.toml`; exact resolved ve
 ├── tests
 │   └── ui
 │       ├── conftest.py
-│       └── test_login.py
+│       └── test_auth.py
 └── uv.lock
 ```
 
