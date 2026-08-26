@@ -12,14 +12,12 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -47,6 +45,23 @@ jobs:
         working-directory: spree-storefront
         run: pnpm install --frozen-lockfile
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install Python dependencies
+        run: uv sync --locked
+
+      - name: Run code format & lint checks
+        run: |
+          uv run black --check .
+          uv run ruff check .
+
+      - name: Install Playwright Chromium
+        run: uv run playwright install --with-deps chromium
+
       - name: Pull Docker images
         run: docker compose -f compose.ci.yml pull
 
@@ -58,6 +73,23 @@ jobs:
 
       - name: Seed Spree database
         run: docker compose -f compose.ci.yml exec -T spree bin/rails db:seed
+
+      - name: Create test customer
+        env:
+          E2E_LOGIN_EMAIL: test@example.com
+          E2E_LOGIN_PASSWORD: password123
+        run: |
+          docker compose -f compose.ci.yml exec -T \
+            -e E2E_LOGIN_EMAIL \
+            -e E2E_LOGIN_PASSWORD \
+            spree bin/rails runner '
+              user = Spree.user_class.find_or_initialize_by(email: ENV.fetch("E2E_LOGIN_EMAIL"))
+              user.password = ENV.fetch("E2E_LOGIN_PASSWORD")
+              user.password_confirmation = ENV.fetch("E2E_LOGIN_PASSWORD")
+              user.save!
+            '
+          echo "LOGIN_EMAIL=$E2E_LOGIN_EMAIL" >> "$GITHUB_ENV"
+          echo "PASSWORD=$E2E_LOGIN_PASSWORD" >> "$GITHUB_ENV"
 
       - name: Configure storefront connection
         run: |
@@ -74,6 +106,11 @@ jobs:
 
       - name: Verify storefront health
         run: curl --fail --retry 60 --retry-delay 2 --retry-all-errors http://localhost:3001/us/en
+
+      - name: Run E2E tests
+        env:
+          BASE_URL: http://localhost:3001/us/en
+        run: uv run pytest
 
       - name: Show storefront logs on failure
         if: failure()
