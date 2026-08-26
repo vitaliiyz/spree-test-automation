@@ -25,6 +25,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Checkout Spree storefront
+        uses: actions/checkout@v7
+        with:
+          repository: spree/storefront
+          path: spree-storefront
+
       - name: Pull Docker images
         run: docker compose -f compose.ci.yml pull
 
