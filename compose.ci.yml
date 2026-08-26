@@ -16,7 +16,7 @@ services:
       timeout: 5s
       retries: 10
   spree:
-    image: ghcr.io/spree/spree:latest
+    image: ghcr.io/spree/spree:5.6.1@sha256:048c57126667464722c61485be81686d7ddc1717794a3d77eff902a4e2125070
     depends_on:
       postgres:
         condition: service_healthy

@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: spree/storefront
+          ref: e1b2cc76335fe9a419afb090db5ef5da61432bab
           path: spree-storefront
 
       - name: Install pnpm
