@@ -66,6 +66,19 @@ jobs:
           echo "SPREE_API_URL=http://localhost:3000" >> "$GITHUB_ENV"
           echo "SPREE_PUBLISHABLE_KEY=$publishable_key" >> "$GITHUB_ENV"
 
+      - name: Start storefront
+        working-directory: spree-storefront
+        run: |
+          pnpm run dev > storefront.log 2>&1 &
+          echo $! > storefront.pid
+
+      - name: Verify storefront health
+        run: curl --fail --retry 60 --retry-delay 2 --retry-all-errors http://localhost:3001/us/en
+
+      - name: Show storefront logs on failure
+        if: failure()
+        run: cat spree-storefront/storefront.log
+
       - name: Stop Docker
         if: always()
         run: docker compose -f compose.ci.yml down -v
