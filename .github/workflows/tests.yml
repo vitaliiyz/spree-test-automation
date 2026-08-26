@@ -59,6 +59,13 @@ jobs:
       - name: Seed Spree database
         run: docker compose -f compose.ci.yml exec -T spree bin/rails db:seed
 
+      - name: Configure storefront connection
+        run: |
+          publishable_key=$(docker compose -f compose.ci.yml exec -T spree bin/rails spree:cli:create_api_key NAME=E2E KEY_TYPE=publishable | grep -oE 'pk_[A-Za-z0-9_-]+' | head -n 1)
+          test -n "$publishable_key"
+          echo "SPREE_API_URL=http://localhost:3000" >> "$GITHUB_ENV"
+          echo "SPREE_PUBLISHABLE_KEY=$publishable_key" >> "$GITHUB_ENV"
+
       - name: Stop Docker
         if: always()
         run: docker compose -f compose.ci.yml down -v
