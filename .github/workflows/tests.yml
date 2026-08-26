@@ -16,8 +16,8 @@ permissions:
   id-token: write
 
 jobs:
-  tests:
-    name: tests
+  e2e:
+    name: E2E tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -30,6 +30,22 @@ jobs:
         with:
           repository: spree/storefront
           path: spree-storefront
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          package_json_file: spree-storefront/package.json
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: spree-storefront/pnpm-lock.yaml
+
+      - name: Install storefront dependencies
+        working-directory: spree-storefront
+        run: pnpm install --frozen-lockfile
 
       - name: Pull Docker images
         run: docker compose -f compose.ci.yml pull
