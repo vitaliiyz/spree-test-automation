@@ -56,6 +56,9 @@ jobs:
       - name: Verify Spree health
         run: curl --fail http://localhost:3000/up
 
+      - name: Seed Spree database
+        run: docker compose -f compose.ci.yml exec -T spree bin/rails db:seed
+
       - name: Stop Docker
         if: always()
         run: docker compose -f compose.ci.yml down -v
