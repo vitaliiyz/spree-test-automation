@@ -13,6 +13,8 @@ API testing with Requests is planned.
 - **Requests 2.34.2** — HTTP library for API testing.
 - **Ruff 0.16.3** — linting tool.
 - **Black 26.5.1** — code formatter.
+- **Docker Compose** — containerized CI services and Playwright test runner.
+- **GitHub Actions** — automated checks and end-to-end test execution.
 
 Minimum dependency versions are specified in `pyproject.toml`; exact resolved versions are recorded in `uv.lock` for reproducible installations.
 
@@ -30,11 +32,15 @@ Minimum dependency versions are specified in `pyproject.toml`; exact resolved ve
 
 ```
 .
+├── .github
+│   └── workflows
+│       └── tests.yml
 ├── .env.example
 ├── .gitignore
 ├── .python-version
 ├── AGENTS.md
 ├── README.md
+├── compose.ci.yml
 ├── config.py
 ├── pages
 │   ├── account_page.py
@@ -65,7 +71,7 @@ cd spree-test-automation
 Install the dependencies:
 
 ```bash
-uv sync
+uv sync --locked
 ```
 
 Create a local environment file:
@@ -79,12 +85,13 @@ Open `.env` and provide the storefront URL and valid customer credentials:
 ```dotenv
 LOGIN_EMAIL=your_login_email
 PASSWORD=your_login_password
-BASE_URL=http://localhost:3001
+BASE_URL=http://localhost:3001/us/en
 ```
 
 The `.env` file contains local credentials and must not be committed.
 
-Install the Chromium browser used by the UI tests:
+For local execution, install the Chromium browser used by the UI tests. CI uses the pinned
+Playwright Docker image instead:
 
 ```bash
 uv run playwright install chromium
@@ -95,3 +102,13 @@ Run the complete suite from the repository root:
 ```bash
 uv run pytest
 ```
+
+## Continuous integration
+
+The GitHub Actions workflow runs for pull requests targeting `main`, pushes to `main`, and manual
+workflow dispatches.
+
+The workflow checks out the pinned Spree storefront revision, validates the Python code, starts
+PostgreSQL, Redis, and Spree through Docker Compose, seeds the database, creates a test customer,
+and starts the storefront through `pnpm`. Pytest then runs inside a version- and digest-pinned
+Playwright Python container. Docker resources are removed after the run, including after failures.
