@@ -1,0 +1,128 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: E2E tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Checkout Spree storefront
+        uses: actions/checkout@v7
+        with:
+          repository: spree/storefront
+          ref: e1b2cc76335fe9a419afb090db5ef5da61432bab
+          path: spree-storefront
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          package_json_file: spree-storefront/package.json
+
+      - name: Install Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: spree-storefront/pnpm-lock.yaml
+
+      - name: Install storefront dependencies
+        working-directory: spree-storefront
+        run: pnpm install --frozen-lockfile
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.0.1
+        with:
+          version: "0.12.7"
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install Python dependencies
+        run: uv sync --locked
+
+      - name: Run code format & lint checks
+        run: |
+          uv run black --check .
+          uv run ruff check .
+
+      - name: Pull Docker images
+        run: docker compose -f compose.ci.yml --profile tests pull
+
+      - name: Run Docker images
+        run: docker compose -f compose.ci.yml up -d --wait
+
+      - name: Verify Spree health
+        run: curl --fail http://localhost:3000/up
+
+      - name: Seed Spree database
+        run: docker compose -f compose.ci.yml exec -T spree bin/rails db:seed
+
+      - name: Create test customer
+        env:
+          E2E_LOGIN_EMAIL: test@example.com
+          E2E_LOGIN_PASSWORD: password123
+        run: |
+          docker compose -f compose.ci.yml exec -T \
+            -e E2E_LOGIN_EMAIL \
+            -e E2E_LOGIN_PASSWORD \
+            spree bin/rails runner '
+              user = Spree.user_class.find_or_initialize_by(email: ENV.fetch("E2E_LOGIN_EMAIL"))
+              user.password = ENV.fetch("E2E_LOGIN_PASSWORD")
+              user.password_confirmation = ENV.fetch("E2E_LOGIN_PASSWORD")
+              user.save!
+            '
+          echo "LOGIN_EMAIL=$E2E_LOGIN_EMAIL" >> "$GITHUB_ENV"
+          echo "PASSWORD=$E2E_LOGIN_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Configure storefront connection
+        run: |
+          publishable_key=$(docker compose -f compose.ci.yml exec -T spree bin/rails spree:cli:create_api_key NAME=E2E KEY_TYPE=publishable | grep -oE 'pk_[A-Za-z0-9_-]+' | head -n 1)
+          test -n "$publishable_key"
+          echo "SPREE_API_URL=http://localhost:3000" >> "$GITHUB_ENV"
+          echo "SPREE_PUBLISHABLE_KEY=$publishable_key" >> "$GITHUB_ENV"
+
+      - name: Start storefront
+        working-directory: spree-storefront
+        run: |
+          pnpm run dev > storefront.log 2>&1 &
+          echo $! > storefront.pid
+
+      - name: Verify storefront health
+        run: curl --fail --retry 60 --retry-delay 2 --retry-all-errors http://localhost:3001/us/en
+
+      - name: Run E2E tests
+        env:
+          BASE_URL: http://localhost:3001/us/en
+        run: docker compose -f compose.ci.yml --profile tests run --rm playwright
+
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: playwright-results
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Show storefront logs on failure
+        if: failure()
+        run: cat spree-storefront/storefront.log
+
+      - name: Stop Docker
+        if: always()
+        run: docker compose -f compose.ci.yml down -v

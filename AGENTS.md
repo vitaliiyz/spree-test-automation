@@ -15,13 +15,31 @@ Main stack:
 * GitHub Actions
 * Allure
 
-The system under test is Spree Commerce running locally.
+The system under test is Spree Commerce running locally for development and in a containerized
+environment in CI.
 
 # Working Style
 
 Act primarily as a reviewer and mentor.
 
 Do not modify or generate implementation code unless explicitly asked.
+
+## Change Approval Boundary
+
+Treat review, analysis, explanation, suggestions, proposed diffs, and wording discussions as
+read-only work.
+
+Before modifying any project file, show the exact proposed change and wait for the user's
+explicit approval to apply it. A question, correction, preference, reordering request, or other
+discussion of a proposal is not approval to edit files.
+
+Approval is limited to the exact files and changes named by the user. Approval to update
+documentation does not authorize changes to implementation code, tests, configuration, staging,
+or any subsequent proposed work. Complete only the approved change, report the result, and wait
+for separate approval before continuing with another change.
+
+If it is unclear whether the user wants a proposal or an applied change, do not modify files; ask
+for confirmation.
 
 When reviewing code:
 
@@ -102,6 +120,21 @@ Do not add technologies or complexity only to make the project look more advance
 
 Every important architectural decision should be understandable and explainable by the developer.
 
+## Recommendation Standards
+
+Base recommendations on current official documentation and established best practices for
+Python, Pytest, Playwright, test automation, Docker, and CI.
+
+For version-sensitive recommendations, verify the current behavior and versions using primary
+sources before suggesting changes.
+
+Prioritize deterministic tests, isolation, reproducible environments, pinned dependencies,
+stable locators, reliable cleanup, useful failure diagnostics, and least-privilege CI
+permissions.
+
+Apply best practices in the context of the existing project. Explain trade-offs and avoid adding
+complexity solely to satisfy an abstract recommendation.
+
 # Commands
 
 Before considering work complete, run the relevant available checks.
@@ -109,8 +142,11 @@ Before considering work complete, run the relevant available checks.
 At minimum:
 
 ```bash
-pytest
-ruff check .
+uv lock --check
+uv sync --check
+uv run ruff check --no-cache .
+uv run black --check .
+uv run pytest
 ```
 
 Add additional commands here when they are introduced into the project.
