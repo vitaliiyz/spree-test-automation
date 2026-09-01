@@ -110,6 +110,15 @@ jobs:
           BASE_URL: http://localhost:3001/us/en
         run: docker compose -f compose.ci.yml --profile tests run --rm playwright
 
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: playwright-results
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Show storefront logs on failure
         if: failure()
         run: cat spree-storefront/storefront.log

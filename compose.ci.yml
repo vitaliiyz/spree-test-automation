@@ -54,4 +54,4 @@ services:
     command: >
       sh -c "pip install uv==0.12.7 &&
              uv sync --locked &&
-             uv run pytest"
+             uv run pytest --tracing=retain-on-failure --screenshot=only-on-failure --video=retain-on-failure --output=test-results"
