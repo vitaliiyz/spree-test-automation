@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  spree:
+    image: ghcr.io/spree/spree:5.6.1@sha256:048c57126667464722c61485be81686d7ddc1717794a3d77eff902a4e2125070
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres@postgres:5432/spree_e2e
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: e2e_secret_key_base_not_for_production_use_only
+      RAILS_FORCE_SSL: "false"
+      RAILS_ASSUME_SSL: "false"
+      RAILS_HOST: localhost:3000
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3000/up || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+  playwright:
+    image: mcr.microsoft.com/playwright/python:v1.62.0-noble@sha256:aa81288e738725378becba5b3e06cb0f3a7f012a610e87e8d767a090ea3f740d
+    profiles: ["tests"]
+    init: true
+    ipc: host
+    network_mode: host
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      BASE_URL: http://localhost:3001/us/en
+      LOGIN_EMAIL: ${LOGIN_EMAIL}
+      PASSWORD: ${PASSWORD}
+      UV_PROJECT_ENVIRONMENT: /tmp/.venv
+    command: >
+      sh -c "pip install uv==0.12.7 &&
+             uv sync --locked &&
+             uv run pytest --tracing=retain-on-failure --screenshot=only-on-failure --video=retain-on-failure --output=test-results"

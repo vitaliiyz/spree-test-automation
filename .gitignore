@@ -12,5 +12,10 @@ __pycache__/
 *.pyd
 .pytest_cache/
 
+# Ignore environment variable files
+.env
+.env.*
+!.env.example
+
 # Ignore macOS system files
 .DS_Store
