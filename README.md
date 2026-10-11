@@ -11,6 +11,7 @@ API testing with Requests is planned.
 - **Pytest 9.1.1** — testing framework.
 - **Playwright 1.62.0** — browser automation library.
 - **Requests 2.34.2** — HTTP library for API testing.
+- **Psycopg 3.3.5** — PostgreSQL driver for registration test data setup and cleanup.
 - **Ruff 0.16.3** — linting tool.
 - **Black 26.5.1** — code formatter.
 - **Docker Compose** — containerized CI services and Playwright test runner.
@@ -21,7 +22,7 @@ Minimum dependency versions are specified in `pyproject.toml`; exact resolved ve
 ## Planned test coverage
 
 - [x] Customer authentication: successful login, invalid password, unknown email, and logout.
-- [ ] Customer registration.
+- [x] Customer registration.
 - [ ] Product catalog, search, and filtering.
 - [ ] Cart management.
 - [ ] Checkout and order creation.
@@ -45,12 +46,17 @@ Minimum dependency versions are specified in `pyproject.toml`; exact resolved ve
 ├── pages
 │   ├── account_page.py
 │   ├── base_page.py
-│   └── login_page.py
+│   ├── login_page.py
+│   └── register_page.py
 ├── pyproject.toml
 ├── tests
 │   └── ui
 │       ├── conftest.py
-│       └── test_auth.py
+│       ├── test_login.py
+│       └── test_register.py
+├── utils
+│   ├── email_generator.py
+│   └── postgres_helper.py
 └── uv.lock
 ```
 
@@ -58,6 +64,59 @@ Minimum dependency versions are specified in `pyproject.toml`; exact resolved ve
 
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) installed.
 - Spree Commerce storefront running and available at the URL configured in `BASE_URL` (for example, `http://localhost:3001`).
+- Access to the PostgreSQL database used by the same Spree instance, with
+  permissions to read, insert, and delete test data. Configure the connection
+  using `DATABASE_URL` in `.env`.
+
+## Local Spree startup
+
+Replace `<path-to-spree-local>` with the path to your local Spree project.
+
+### Start Spree services
+
+```bash
+cd <path-to-spree-local>
+docker compose up -d
+docker compose ps
+```
+
+### Start the storefront
+
+Run the following commands in a separate terminal and keep it open:
+
+```bash
+cd <path-to-spree-local>/apps/storefront
+npm run dev
+```
+
+### Enable database access
+
+Registration tests need access to the Spree PostgreSQL database from the host.
+Create a proxy container once to expose PostgreSQL at `127.0.0.1:5433`:
+
+```bash
+docker run -d \
+  --name spree-db-access \
+  --restart unless-stopped \
+  --network spree-local_default \
+  -p 127.0.0.1:5433:5432 \
+  alpine/socat \
+  TCP-LISTEN:5432,fork,reuseaddr \
+  TCP:spree-local-postgres-1:5432
+```
+
+This command assumes that the Docker network is named `spree-local_default`
+and the PostgreSQL container is named `spree-local-postgres-1`.
+Replace these names if your local environment uses different ones.
+
+If the proxy container already exists but is stopped, start it instead:
+
+```bash
+docker start spree-db-access
+```
+
+Configure `DATABASE_URL` in `.env` using `127.0.0.1`, port `5433`,
+and the database name and credentials of your local Spree instance.
 
 ## Setup and execution
 
@@ -80,13 +139,10 @@ Create a local environment file:
 cp .env.example .env
 ```
 
-Open `.env` and provide the storefront URL and valid customer credentials:
+Open `.env` and fill in all variables from `.env.example`.
 
-```dotenv
-LOGIN_EMAIL=your_login_email
-PASSWORD=your_login_password
-BASE_URL=http://localhost:3001/us/en
-```
+Registration tests require access to the Spree PostgreSQL database and create
+and delete test data there.
 
 The `.env` file contains local credentials and must not be committed.
 

@@ -8,9 +8,9 @@ class BasePage:
 
     def __init__(self, page: Page) -> None:
         """Initialize the base page."""
-        self._page = page
+        self.page = page
         self._path = ""
 
     def open(self) -> None:
         """Open the page in the browser."""
-        self._page.goto(f"{BASE_URL}{self._path}")
+        self.page.goto(f"{BASE_URL}{self._path}")
