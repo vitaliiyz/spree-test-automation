@@ -159,6 +159,27 @@ Run the complete suite from the repository root:
 uv run pytest
 ```
 
+## Stop the local environment
+
+Stop the storefront by pressing `Ctrl+C` in the terminal running `npm run dev`.
+
+Stop the database access proxy:
+
+```bash
+docker stop spree-db-access
+```
+
+Stop Spree services:
+
+```bash
+cd <path-to-spree-local>
+docker compose stop
+```
+
+The containers and database data are preserved.
+To start the environment again, follow the **Local Spree startup** instructions.
+For database access, use `docker start spree-db-access` because the proxy container already exists.
+
 ## Continuous integration
 
 The GitHub Actions workflow runs for pull requests targeting `main`, pushes to `main`, and manual
