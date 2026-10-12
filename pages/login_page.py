@@ -11,7 +11,7 @@ class LoginPage(BasePage):
         super().__init__(page)
         self._path = "/account"
 
-        self.login_form: Locator = self._page.locator('[data-slot="card"]')
+        self.login_form: Locator = self.page.locator('[data-slot="card"]')
         self.login_form_title: Locator = self.login_form.locator('[data-slot="card-title"]')
         self.email_field: Locator = self.login_form.get_by_role("textbox", name="Email", exact=True)
         self.password_field: Locator = self.login_form.get_by_role(

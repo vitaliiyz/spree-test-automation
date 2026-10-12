@@ -11,12 +11,12 @@ class AccountPage(BasePage):
         super().__init__(page)
         self._path = "/account"
 
-        self.account_title: Locator = self._page.get_by_role(
+        self.account_title: Locator = self.page.get_by_role(
             "heading",
             name="Account Overview",
             exact=True,
         )
-        self.sidebar: Locator = self._page.get_by_role("complementary")
+        self.sidebar: Locator = self.page.get_by_role("complementary")
         self.sign_out_button: Locator = self.sidebar.get_by_role("button", name="Sign Out")
 
     def sign_out(self) -> None:
