@@ -2,6 +2,7 @@ from playwright.sync_api import expect
 
 from config import FIRST_NAME, LAST_NAME, PASSWORD
 from pages.account_page import AccountPage
+from pages.login_page import LoginPage
 from pages.register_page import RegisterPage
 
 
@@ -18,6 +19,33 @@ def test_successful_registration(
             password=PASSWORD,
         )
 
+        expect(account_page.account_title).to_be_visible()
+        expect(account_page.sidebar.get_by_text(registration_email, exact=True)).to_be_visible()
+
+    finally:
+        remove_user(registration_email)
+
+
+def test_registered_user_can_login_again(
+    opened_register_page: RegisterPage,
+    account_page: AccountPage,
+    login_page: LoginPage,
+    registration_email,
+    remove_user,
+) -> None:
+    """Test to verify that user can create an account successfully with valid data and login again."""
+
+    try:
+        opened_register_page.register(
+            first_name=FIRST_NAME,
+            last_name=LAST_NAME,
+            email=registration_email,
+            password=PASSWORD,
+        )
+
+        account_page.sign_out()
+
+        login_page.login(registration_email, PASSWORD)
         expect(account_page.account_title).to_be_visible()
         expect(account_page.sidebar.get_by_text(registration_email, exact=True)).to_be_visible()
 
