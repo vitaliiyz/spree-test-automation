@@ -4,6 +4,7 @@ from playwright.sync_api import Page
 from config import FIRST_NAME, LAST_NAME, LOGIN_EMAIL, PASSWORD
 from pages.account_page import AccountPage
 from pages.login_page import LoginPage
+from pages.products_page import ProductsPage
 from pages.register_page import RegisterPage
 from utils.email_generator import generate_email
 from utils.postgres_helper import (
@@ -49,6 +50,14 @@ def opened_register_page(page: Page) -> RegisterPage:
     register_page.open()
 
     return register_page
+
+
+@pytest.fixture
+def opened_products_page(page: Page) -> ProductsPage:
+    products_page = ProductsPage(page)
+    products_page.open()
+
+    return products_page
 
 
 @pytest.fixture
