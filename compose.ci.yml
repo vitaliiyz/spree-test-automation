@@ -8,6 +8,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    ports:
+      - "127.0.0.1:5433:5432"
   redis:
     image: redis:7-alpine
     healthcheck:
@@ -48,9 +50,12 @@ services:
       - .:/app
     environment:
       BASE_URL: http://localhost:3001/us/en
+      FIRST_NAME: Test
+      LAST_NAME: User
       LOGIN_EMAIL: ${LOGIN_EMAIL}
       PASSWORD: ${PASSWORD}
       UV_PROJECT_ENVIRONMENT: /tmp/.venv
+      DATABASE_URL: postgresql://postgres@127.0.0.1:5433/spree_e2e
     command: >
       sh -c "pip install uv==0.12.7 &&
              uv sync --locked &&

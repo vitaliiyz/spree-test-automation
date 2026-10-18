@@ -13,6 +13,8 @@ def get_required_env(name: str) -> str:
 
 
 BASE_URL = get_required_env("BASE_URL").rstrip("/")
+FIRST_NAME = get_required_env("FIRST_NAME")
+LAST_NAME = get_required_env("LAST_NAME")
 LOGIN_EMAIL = get_required_env("LOGIN_EMAIL")
 PASSWORD = get_required_env("PASSWORD")
 UNKNOWN_EMAIL = "test@unknowntest.com"
