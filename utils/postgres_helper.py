@@ -43,7 +43,7 @@ def get_spree_refresh_tokens_by_id(user_id: int) -> list[dict]:
             """
             SELECT * FROM spree_refresh_tokens WHERE user_id = %s
             """,
-            (str(user_id),),
+            (user_id,),
         ).fetchall()
 
 
@@ -60,14 +60,14 @@ def remove_created_user_data_by_id(user_id: int) -> None:
             """
             DELETE FROM spree_refresh_tokens WHERE user_id = %s
             """,
-            (str(user_id),),
+            (user_id,),
         )
 
         conn.execute(
             """
             DELETE FROM spree_users WHERE id = %s
             """,
-            (str(user_id),),
+            (user_id,),
         )
 
 

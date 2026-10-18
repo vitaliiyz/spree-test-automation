@@ -53,8 +53,15 @@ def opened_register_page(page: Page) -> RegisterPage:
 
 @pytest.fixture
 def registration_email():
-    """Fixture to genarate an email address and remove created user data from database after testing."""
+    """Fixture to generate an email address and remove created user data from database after testing."""
     return generate_email()
+
+
+@pytest.fixture
+def registered_user_email(registration_email, remove_user):
+    """Fixture to generate an email and remove created user data from database after testing."""
+    yield registration_email
+    remove_user(registration_email)
 
 
 @pytest.fixture
@@ -75,10 +82,7 @@ def remove_user():
 
 
 @pytest.fixture
-def registered_user(registration_email, remove_user):
+def registered_user(registered_user_email, remove_user):
     """Fixture to register user data from database after testing."""
-    create_user_data(registration_email, FIRST_NAME, LAST_NAME)
-
-    yield registration_email
-
-    remove_user(registration_email)
+    create_user_data(registered_user_email, FIRST_NAME, LAST_NAME)
+    return registered_user_email
